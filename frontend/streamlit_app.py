@@ -49,17 +49,39 @@ def make_api_request(endpoint: str, method: str = "GET", data: Dict = None) -> D
     """Make API request with error handling"""
     try:
         url = f"{API_BASE_URL}{endpoint}"
+        
+        # Add timeout to prevent hanging
+        timeout = 30
+        
         if method == "GET":
-            response = requests.get(url)
+            response = requests.get(url, timeout=timeout)
         elif method == "POST":
-            response = requests.post(url, json=data)
+            response = requests.post(url, json=data, timeout=timeout)
         elif method == "PUT":
-            response = requests.put(url, json=data)
+            response = requests.put(url, json=data, timeout=timeout)
         
         response.raise_for_status()
         return response.json()
+    except requests.exceptions.ConnectionError as e:
+        st.error(f"❌ Connection Error: Cannot connect to backend at {API_BASE_URL}")
+        st.info("💡 Make sure the backend server is running on http://localhost:8000")
+        return {}
+    except requests.exceptions.Timeout as e:
+        st.error(f"⏰ Timeout Error: Request took too long to complete")
+        return {}
+    except requests.exceptions.HTTPError as e:
+        st.error(f"🚫 HTTP Error {response.status_code}: {str(e)}")
+        try:
+            error_detail = response.json()
+            st.error(f"Details: {error_detail}")
+        except:
+            st.error(f"Response: {response.text}")
+        return {}
     except requests.exceptions.RequestException as e:
-        st.error(f"API Error: {str(e)}")
+        st.error(f"🔧 API Error: {str(e)}")
+        return {}
+    except Exception as e:
+        st.error(f"💥 Unexpected Error: {str(e)}")
         return {}
 
 def display_agent_tag(agent_name: str):
@@ -125,9 +147,25 @@ def main():
     st.title("📚 StudyBuddy AI Agent System")
     st.markdown("Multi-Agent Study Planning and Execution Platform")
     
+    # Connection status in sidebar
+    st.sidebar.title("🔗 System Status")
+    if test_connection():
+        st.sidebar.success("✅ Backend Connected")
+    else:
+        st.sidebar.error("❌ Backend Disconnected")
+        st.sidebar.info("Please start the backend server")
+    
     # Sidebar for navigation
     st.sidebar.title("Navigation")
-    page = st.sidebar.selectbox("Choose a page", ["Create Plan", "View Plans", "Execute Steps", "View Logs"])
+    page = st.sidebar.selectbox("Choose a page", ["Create Plan", "View Plans", "Execute Steps", "View Logs", "Database Management"])
+    
+    # Add current plan info in sidebar
+    if hasattr(st.session_state, 'current_plan_id'):
+        st.sidebar.title("📋 Current Plan")
+        st.sidebar.info(f"Plan ID: {st.session_state.current_plan_id}")
+        if st.sidebar.button("Clear Current Plan"):
+            del st.session_state.current_plan_id
+            st.rerun()
     
     if page == "Create Plan":
         create_plan_page()
@@ -137,6 +175,8 @@ def main():
         execute_steps_page()
     elif page == "View Logs":
         view_logs_page()
+    elif page == "Database Management":
+        database_management_page()
 
 def create_plan_page():
     st.header("🎯 Create New Study Plan")
@@ -204,3 +244,181 @@ def view_plans_page():
                 st.subheader("📝 Study Steps")
                 for i, step in enumerate(plan.get("steps", []), 1):
                     status = step.get("status", "pending")
+                    
+                    # Determine CSS class based on status
+                    css_class = f"{status}-step"
+                    
+                    with st.expander(f"Step {i}: {step.get('title', 'Untitled Step')} - {status.title()}"):
+                        st.markdown(f'<div class="step-card {css_class}">', unsafe_allow_html=True)
+                        st.write(f"**Description:** {step.get('description', '')}")
+                        st.write(f"**Tool:** {step.get('tool', 'LLM')}")
+                        st.write(f"**Status:** {status.title()}")
+                        st.write(f"**Step ID:** `{step.get('id', '')}`")
+                        
+                        if step.get("result"):
+                            st.write("**Result:**")
+                            display_step_result(step["result"])
+                        
+                        st.markdown('</div>', unsafe_allow_html=True)
+
+def execute_steps_page():
+    st.header("⚡ Execute Study Steps")
+    
+    if not hasattr(st.session_state, 'current_plan_id'):
+        st.warning("⚠️ No plan selected. Please create a plan first.")
+        return
+    
+    plan_id = st.session_state.current_plan_id
+    
+    with st.spinner("Loading plan..."):
+        response = make_api_request(f"/api/plan/{plan_id}")
+        
+        if not response:
+            st.error("❌ Failed to load plan. Please try again.")
+            return
+        
+        plan = response["plan_json"]
+        st.subheader(f"📋 Plan: {plan.get('title', 'Untitled Plan')}")
+        
+        # Display steps with execution buttons
+        for i, step in enumerate(plan.get("steps", []), 1):
+            status = step.get("status", "pending")
+            
+            col1, col2, col3 = st.columns([3, 1, 1])
+            
+            with col1:
+                st.write(f"**Step {i}:** {step.get('title', 'Untitled Step')}")
+                st.write(f"*{step.get('description', '')}*")
+                st.write(f"**Tool:** {step.get('tool', 'LLM')} | **Status:** {status.title()}")
+            
+            with col2:
+                if status == "pending":
+                    if st.button(f"Execute", key=f"exec_{step['id']}"):
+                        with st.spinner(f"Executing step {i}..."):
+                            exec_response = make_api_request("/api/execute_step", "POST", {"step_id": step["id"]})
+                            
+                            if exec_response:
+                                st.success(f"✅ Step {i} executed successfully!")
+                                st.rerun()
+                            else:
+                                st.error(f"❌ Failed to execute step {i}")
+                elif status == "running":
+                    st.info("🔄 Running...")
+                elif status == "completed":
+                    st.success("✅ Completed")
+                elif status == "failed":
+                    st.error("❌ Failed")
+            
+            with col3:
+                if status in ["completed", "failed"] and step.get("result"):
+                    if st.button(f"View Result", key=f"view_{step['id']}"):
+                        st.subheader(f"Step {i} Result")
+                        display_step_result(step["result"])
+            
+            st.divider()
+
+def view_logs_page():
+    st.header("📊 System Logs")
+    
+    # Add filter options
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        agent_filter = st.selectbox("Filter by Agent", ["All", "planner", "researcher", "executor"])
+    
+    with col2:
+        if st.button("🔄 Refresh Logs"):
+            st.rerun()
+    
+    # Fetch logs
+    agent_param = None if agent_filter == "All" else agent_filter
+    
+    with st.spinner("Loading logs..."):
+        response = make_api_request(f"/api/logs?agent={agent_param}" if agent_param else "/api/logs")
+        
+        if response and response.get("logs"):
+            logs = response["logs"]
+            
+            if logs:
+                st.subheader(f"📋 Logs ({len(logs)} entries)")
+                
+                for log in logs:
+                    with st.expander(f"{log.get('timestamp', 'Unknown time')} - {log.get('agent', 'Unknown agent')}"):
+                        st.write(f"**Agent:** {log.get('agent', 'Unknown')}")
+                        st.write(f"**Action:** {log.get('action', 'Unknown')}")
+                        st.write(f"**Timestamp:** {log.get('timestamp', 'Unknown')}")
+                        
+                        if log.get('details'):
+                            st.write("**Details:**")
+                            st.json(log['details'])
+            else:
+                st.info("📝 No logs found.")
+        else:
+            st.error("❌ Failed to load logs.")
+
+def database_management_page():
+    st.header("🗄️ Database Management")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("📊 Database Statistics")
+        if st.button("🔄 Refresh Stats"):
+            st.rerun()
+        
+        with st.spinner("Loading database statistics..."):
+            response = make_api_request("/api/database_stats")
+            
+            if response and response.get("stats"):
+                stats = response["stats"]
+                st.metric("Plans", stats.get("plans", 0))
+                st.metric("Steps", stats.get("steps", 0))
+                st.metric("Logs", stats.get("logs", 0))
+            else:
+                st.error("❌ Failed to load database statistics")
+    
+    with col2:
+        st.subheader("🧹 Database Actions")
+        st.warning("⚠️ These actions will permanently delete data!")
+        
+        if st.button("🗑️ Clear All Data", type="secondary"):
+            if st.session_state.get("confirm_clear", False):
+                with st.spinner("Clearing database..."):
+                    response = make_api_request("/api/clear_database", "POST")
+                    
+                    if response and response.get("status") == "success":
+                        st.success("✅ Database cleared successfully!")
+                        st.session_state.confirm_clear = False
+                        st.rerun()
+                    else:
+                        st.error("❌ Failed to clear database")
+            else:
+                st.session_state.confirm_clear = True
+                st.warning("⚠️ Click again to confirm clearing all data")
+        
+        if st.session_state.get("confirm_clear", False):
+            if st.button("❌ Cancel"):
+                st.session_state.confirm_clear = False
+                st.rerun()
+
+def test_connection():
+    """Test connection to backend API"""
+    st.subheader("🔗 Connection Test")
+    
+    with st.spinner("Testing connection to backend..."):
+        try:
+            response = make_api_request("/")
+            if response and response.get("message"):
+                st.success(f"✅ Backend connected successfully!")
+                st.write(f"**Response:** {response['message']}")
+                return True
+            else:
+                st.error("❌ Backend responded but with unexpected format")
+                return False
+        except Exception as e:
+            st.error(f"❌ Failed to connect to backend: {str(e)}")
+            st.info("💡 Make sure the backend server is running on http://localhost:8000")
+            return False
+
+if __name__ == "__main__":
+    main()

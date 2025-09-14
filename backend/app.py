@@ -195,6 +195,24 @@ async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
+@app.post("/api/clear_database")
+async def clear_database():
+    """Clear all data from the database (useful for testing)"""
+    try:
+        db.clear_all_data()
+        return {"message": "Database cleared successfully", "status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/database_stats")
+async def get_database_stats():
+    """Get database statistics"""
+    try:
+        stats = db.get_database_stats()
+        return {"stats": stats, "status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

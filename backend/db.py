@@ -56,23 +56,29 @@ class Database:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
-        cursor.execute(
-            "INSERT INTO plans (goal, plan_json) VALUES (?, ?)",
-            (goal, plan_json)
-        )
-        plan_id = cursor.lastrowid
-        
-        # Create step records
-        plan_data = json.loads(plan_json)
-        for step in plan_data.get('steps', []):
+        try:
             cursor.execute(
-                "INSERT INTO steps (step_id, plan_id, status) VALUES (?, ?, ?)",
-                (step['id'], plan_id, 'pending')
+                "INSERT INTO plans (goal, plan_json) VALUES (?, ?)",
+                (goal, plan_json)
             )
-        
-        conn.commit()
-        conn.close()
-        return plan_id
+            plan_id = cursor.lastrowid
+            
+            # Create step records
+            plan_data = json.loads(plan_json)
+            for step in plan_data.get('steps', []):
+                # Use INSERT OR IGNORE to avoid constraint violations
+                cursor.execute(
+                    "INSERT OR IGNORE INTO steps (step_id, plan_id, status) VALUES (?, ?, ?)",
+                    (step['id'], plan_id, 'pending')
+                )
+            
+            conn.commit()
+            return plan_id
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
     
     def get_plan(self, plan_id: int) -> Optional[Dict[str, Any]]:
         """Get plan by ID"""
@@ -171,3 +177,42 @@ class Database:
             }
             for row in results
         ]
+    
+    def clear_all_data(self):
+        """Clear all data from the database (useful for testing)"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute("DELETE FROM steps")
+            cursor.execute("DELETE FROM plans")
+            cursor.execute("DELETE FROM logs")
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
+    
+    def get_database_stats(self) -> Dict[str, int]:
+        """Get database statistics"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute("SELECT COUNT(*) FROM plans")
+            plan_count = cursor.fetchone()[0]
+            
+            cursor.execute("SELECT COUNT(*) FROM steps")
+            step_count = cursor.fetchone()[0]
+            
+            cursor.execute("SELECT COUNT(*) FROM logs")
+            log_count = cursor.fetchone()[0]
+            
+            return {
+                'plans': plan_count,
+                'steps': step_count,
+                'logs': log_count
+            }
+        finally:
+            conn.close()

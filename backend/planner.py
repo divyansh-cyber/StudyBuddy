@@ -12,28 +12,31 @@ class PlannerAgent:
     def create_study_plan(self, goal: str) -> Dict[str, Any]:
         """Create a comprehensive study plan"""
         
-        system_prompt = """You are an expert study planner. Create a detailed study plan with 4-6 steps.
+        # Generate a unique plan identifier
+        plan_uuid = str(uuid.uuid4())[:8]  # Use first 8 characters of UUID
+        
+        system_prompt = f"""You are an expert study planner. Create a detailed study plan with 4-6 steps.
         Each step should have:
-        - id: unique identifier
+        - id: unique identifier (use format: {plan_uuid}_step_1, {plan_uuid}_step_2, etc.)
         - title: clear, actionable title
         - description: detailed description of what to do
         - tool: one of [RAG, LLM, FLASHCARDS, QUIZ]
         - expected_output: what the student should produce
         
         Return valid JSON with this structure:
-        {
+        {{
             "title": "Study Plan Title",
             "description": "Overall plan description",
             "steps": [
-                {
-                    "id": "step_1",
+                {{
+                    "id": "{plan_uuid}_step_1",
                     "title": "Step Title",
                     "description": "Detailed step description",
                     "tool": "RAG",
                     "expected_output": "What to produce"
-                }
+                }}
             ]
-        }"""
+        }}"""
         
         prompt = f"""Create a comprehensive study plan for this goal: "{goal}"
         
@@ -46,13 +49,13 @@ class PlannerAgent:
         # Validate and fix plan structure
         if "error" in plan_data:
             # Fallback plan
-            plan_data = self._create_fallback_plan(goal)
+            plan_data = self._create_fallback_plan(goal, plan_uuid)
         
-        # Ensure all steps have required fields
+        # Ensure all steps have required fields and unique IDs
         if "steps" in plan_data:
             for i, step in enumerate(plan_data["steps"]):
-                if "id" not in step:
-                    step["id"] = f"step_{i+1}"
+                if "id" not in step or not step["id"].startswith(plan_uuid):
+                    step["id"] = f"{plan_uuid}_step_{i+1}"
                 if "tool" not in step:
                     step["tool"] = "LLM"
         
@@ -61,35 +64,35 @@ class PlannerAgent:
         
         return plan_data
     
-    def _create_fallback_plan(self, goal: str) -> Dict[str, Any]:
+    def _create_fallback_plan(self, goal: str, plan_uuid: str) -> Dict[str, Any]:
         """Create a fallback plan if LLM fails"""
         return {
             "title": f"Study Plan: {goal}",
             "description": f"A comprehensive study plan to achieve: {goal}",
             "steps": [
                 {
-                    "id": "step_1",
+                    "id": f"{plan_uuid}_step_1",
                     "title": "Research and Gather Information",
                     "description": f"Research key concepts and gather relevant information about {goal}",
                     "tool": "RAG",
                     "expected_output": "Summary of key concepts and resources"
                 },
                 {
-                    "id": "step_2",
+                    "id": f"{plan_uuid}_step_2",
                     "title": "Create Study Materials",
                     "description": "Create flashcards and study notes based on research",
                     "tool": "FLASHCARDS",
                     "expected_output": "Set of flashcards and study notes"
                 },
                 {
-                    "id": "step_3",
+                    "id": f"{plan_uuid}_step_3",
                     "title": "Practice and Apply",
                     "description": "Practice applying the concepts through exercises",
                     "tool": "LLM",
                     "expected_output": "Completed practice exercises"
                 },
                 {
-                    "id": "step_4",
+                    "id": f"{plan_uuid}_step_4",
                     "title": "Self-Assessment",
                     "description": "Take a quiz to test understanding",
                     "tool": "QUIZ",
