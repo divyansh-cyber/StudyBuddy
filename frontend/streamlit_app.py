@@ -13,7 +13,7 @@ API_BASE_URL = "http://localhost:8000"
 # Page configuration
 st.set_page_config(
     page_title="StudyBuddy AI Agent",
-    page_icon="��",
+    page_icon="📘",
     layout="wide"
 )
 
@@ -87,9 +87,9 @@ def make_api_request(endpoint: str, method: str = "GET", data: Dict = None) -> D
 def display_agent_tag(agent_name: str):
     """Display agent tag with appropriate styling"""
     if agent_name.lower() == "planner":
-        st.markdown(f'<span class="agent-tag planner-tag">�� {agent_name}</span>', unsafe_allow_html=True)
+        st.markdown(f'<span class="agent-tag planner-tag">🧠 {agent_name}</span>', unsafe_allow_html=True)
     elif agent_name.lower() == "researcher":
-        st.markdown(f'<span class="agent-tag researcher-tag">�� {agent_name}</span>', unsafe_allow_html=True)
+        st.markdown(f'<span class="agent-tag researcher-tag">🔎 {agent_name}</span>', unsafe_allow_html=True)
     elif agent_name.lower() == "executor":
         st.markdown(f'<span class="agent-tag executor-tag">⚡ {agent_name}</span>', unsafe_allow_html=True)
     else:
@@ -113,7 +113,7 @@ def display_step_result(result: Dict[str, Any]):
                     st.write(f"**Category:** {card['category']}")
     
     elif result_type == "quiz":
-        st.subheader("�� Quiz Created")
+        st.subheader("📝 Quiz Created")
         quiz = result.get("quiz", [])
         for i, question in enumerate(quiz, 1):
             with st.expander(f"Question {i}"):
@@ -128,16 +128,15 @@ def display_step_result(result: Dict[str, Any]):
     elif result_type == "study_guide":
         st.subheader("📖 Study Guide")
         st.write(result.get("content", ""))
-        
+
+        # Consistent headings and bullets for lists
         if result.get("key_takeaways"):
-            st.subheader("�� Key Takeaways")
-            for takeaway in result["key_takeaways"]:
-                st.write(f"• {takeaway}")
-        
+            st.subheader("✅ Key Takeaways")
+            st.markdown("\n".join([f"- {t}" for t in result["key_takeaways"]]))
+
         if result.get("action_items"):
             st.subheader("✅ Action Items")
-            for item in result["action_items"]:
-                st.write(f"• {item}")
+            st.markdown("\n".join([f"- {a}" for a in result["action_items"]]))
     
     else:
         st.subheader("📝 Result")
@@ -201,7 +200,7 @@ def create_plan_page():
                     st.session_state.current_plan_id = response["plan_id"]
                     
                     # Display the plan
-                    st.subheader("�� Generated Study Plan")
+                    st.subheader("📄 Generated Study Plan")
                     plan = response["plan"]
                     
                     st.write(f"**Title:** {plan.get('title', 'Untitled Plan')}")
@@ -279,6 +278,11 @@ def execute_steps_page():
         
         plan = response["plan_json"]
         st.subheader(f"📋 Plan: {plan.get('title', 'Untitled Plan')}")
+
+        # Prepare a place to render a focused result section below the table
+        if 'selected_result' not in st.session_state:
+            st.session_state.selected_result = None
+            st.session_state.selected_result_title = None
         
         # Display steps with execution buttons
         for i, step in enumerate(plan.get("steps", []), 1):
@@ -312,10 +316,24 @@ def execute_steps_page():
             with col3:
                 if status in ["completed", "failed"] and step.get("result"):
                     if st.button(f"View Result", key=f"view_{step['id']}"):
-                        st.subheader(f"Step {i} Result")
-                        display_step_result(step["result"])
+                        # Store selection to show centered below the plan table
+                        st.session_state.selected_result = step["result"]
+                        st.session_state.selected_result_title = f"Step {i} Result"
+                        st.rerun()
             
             st.divider()
+
+        # Centered result panel below the plan table
+        if st.session_state.selected_result:
+            st.markdown("---")
+            _, center_col, _ = st.columns([1, 2, 1])
+            with center_col:
+                st.subheader(st.session_state.selected_result_title or "Step Result")
+                display_step_result(st.session_state.selected_result)
+                if st.button("Close Result"):
+                    st.session_state.selected_result = None
+                    st.session_state.selected_result_title = None
+                    st.rerun()
 
 def view_logs_page():
     st.header("📊 System Logs")

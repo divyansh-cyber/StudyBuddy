@@ -10,7 +10,8 @@ class LLMClient:
     def __init__(self):
         # Configure Gemini Pro
         genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-        self.model = genai.GenerativeModel('gemini-pro')
+        # Use Gemini 2.5 Pro (more powerful model)
+        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
     
     def generate_response(self, prompt: str, system_prompt: str = None) -> str:
         """Generate response using Gemini Pro"""

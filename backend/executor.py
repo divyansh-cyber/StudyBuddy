@@ -206,22 +206,71 @@ class ExecutorAgent:
         return result
     
     def _extract_takeaways(self, text: str) -> List[str]:
-        """Extract key takeaways from text"""
-        takeaways = []
-        lines = text.split('\n')
-        for line in lines:
-            if 'takeaway' in line.lower() or 'key point' in line.lower():
-                takeaways.append(line.strip())
-        return takeaways[:5]
+        """Extract key takeaways by scanning for a 'Key Takeaways' section and collecting bullets."""
+        collected: List[str] = []
+        lines = [l.rstrip() for l in text.split('\n')]
+        in_section = False
+
+        for raw_line in lines:
+            line = raw_line.strip()
+
+            # Detect start of section
+            if not in_section and ('key takeaways' in line.lower() or 'key takeaway' in line.lower() or 'key points' in line.lower()):
+                in_section = True
+                continue
+
+            if in_section:
+                # End section on blank line or next heading-like line
+                if line == "" or any(h in line.lower() for h in ["action items", "additional resources", "summary", "resources"]):
+                    if collected:
+                        break
+                # Collect bullet/numbered items
+                if line.startswith(('- ', '• ', '* ', '– ')) or any(line.startswith(f"{n}. ") for n in range(1, 21)):
+                    item = line[2:] if line[:2] in ['- ', '• ', '* ', '– '] else line.split(' ', 1)[1] if ' ' in line else line
+                    collected.append(item.strip())
+
+        # Fallback: collect any generic bullet lines if section not detected
+        if not collected:
+            for raw_line in lines:
+                s = raw_line.strip()
+                if s.startswith(('- ', '• ', '* ')):
+                    collected.append(s[2:].strip())
+                if len(collected) >= 5:
+                    break
+
+        return collected[:10]
     
     def _extract_action_items(self, text: str) -> List[str]:
-        """Extract action items from text"""
-        actions = []
-        lines = text.split('\n')
-        for line in lines:
-            if line.strip().startswith(('1.', '2.', '3.', '4.', '5.')):
-                actions.append(line.strip())
-        return actions[:5]
+        """Extract action items by scanning for an 'Action Items' section and collecting bullets."""
+        actions: List[str] = []
+        lines = [l.rstrip() for l in text.split('\n')]
+        in_section = False
+
+        for raw_line in lines:
+            line = raw_line.strip()
+
+            if not in_section and ('action items' in line.lower() or 'actions' in line.lower() or 'next steps' in line.lower()):
+                in_section = True
+                continue
+
+            if in_section:
+                if line == "" or any(h in line.lower() for h in ["key takeaways", "additional resources", "summary"]):
+                    if actions:
+                        break
+                if line.startswith(('- ', '• ', '* ', '– ')) or any(line.startswith(f"{n}. ") for n in range(1, 21)):
+                    item = line[2:] if line[:2] in ['- ', '• ', '* ', '– '] else line.split(' ', 1)[1] if ' ' in line else line
+                    actions.append(item.strip())
+
+        # Fallback: pick numbered lines anywhere
+        if not actions:
+            for raw_line in lines:
+                s = raw_line.strip()
+                if any(s.startswith(f"{n}. ") for n in range(1, 21)):
+                    actions.append(s.split(' ', 1)[1].strip() if ' ' in s else s)
+                if len(actions) >= 5:
+                    break
+
+        return actions[:10]
     
     def _extract_checklist(self, text: str) -> List[str]:
         """Extract checklist items from text"""
