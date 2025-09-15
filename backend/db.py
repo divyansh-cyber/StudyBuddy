@@ -101,6 +101,28 @@ class Database:
             }
         return None
     
+    def get_all_plans(self) -> List[Dict[str, Any]]:
+        """Get all plans with their metadata"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            "SELECT id, goal, plan_json, created_at FROM plans ORDER BY created_at DESC"
+        )
+        results = cursor.fetchall()
+        conn.close()
+        
+        plans = []
+        for result in results:
+            plans.append({
+                'id': result[0],
+                'goal': result[1],
+                'plan_json': json.loads(result[2]),
+                'created_at': result[3]
+            })
+        
+        return plans
+    
     def update_step_status(self, step_id: str, status: str, result_json: str = None):
         """Update step status and result"""
         conn = sqlite3.connect(self.db_path)
