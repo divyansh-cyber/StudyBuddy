@@ -939,9 +939,9 @@ def execute_steps_page():
                     st.session_state.selected_results = []
                     st.rerun()
             
-            # Display each result - compact cards with just headings
+            # Display each result with full content
             for idx, result_data in enumerate(st.session_state.selected_results):
-                # Create compact result card with heading and close button
+                # Create result card with heading and close button
                 col1, col2 = st.columns([10, 1])
                 
                 with col1:
@@ -959,6 +959,12 @@ def execute_steps_page():
                     if st.button("✕", key=f"close_result_{idx}", help="Close this result"):
                         st.session_state.selected_results.pop(idx)
                         st.rerun()
+                
+                # Display the actual result content
+                if result_data.get('result'):
+                    display_step_result(result_data['result'])
+                else:
+                    st.warning("No result data available for this step.")
                 
                 # Add separator between results (except for the last one)
                 if idx < len(st.session_state.selected_results) - 1:
