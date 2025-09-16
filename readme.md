@@ -2,8 +2,8 @@
 ## Intelligent Multi-Agent Study Planning & Execution System
 
 **Developer:** Divyansh Rai  
-**University:** [Your University Name]  
-**Department:** [Your Department]  
+**University:** IIT (BHU) VARANASI  
+**Department:** Chemical Engineering and Technology 
 **Application:** Software Engineering Intern - I'm Beside You
 
 ---
@@ -317,12 +317,10 @@ StudyBuddy/
 ├── 📁 scripts/                # Utility and setup scripts
 │   └── ingest_docs.py         # Document ingestion for RAG
 ├── 📊 requirements.txt        # Python dependencies
+├── 📊System_design.txt        # A documentation of the architecture, data design, component breakdown, chosen technologies, and reasons for them
 ├── 🧪 test_new_features.py    # Comprehensive test suite
 ├── 🧪 test_models.py          # Model validation tests
 ├── 🔧 debug_issues.py         # Debugging and diagnostics
-├── 📋 DEMO_SCRIPT.md          # Complete demo presentation guide
-├── 📋 DEMO_EXAMPLES.md        # Ready-to-use demo scenarios
-├── 🔧 FIX_INSTRUCTIONS.md     # Troubleshooting guide
 ├── 🗄️ studybuddy.db           # SQLite database (auto-generated)
 └── 📄 README.md               # This comprehensive documentation
 ```
