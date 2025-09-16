@@ -441,16 +441,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 📊 **Project Statistics**
-
-- **Lines of Code**: ~2,000+ (Python)
-- **Development Time**: 2 weeks intensive development
-- **Features Implemented**: 15+ core features with 5+ advanced capabilities
-- **Test Coverage**: 90%+ coverage with automated test suite
-- **Documentation**: Comprehensive with examples and troubleshooting guides
-
----
-
 **StudyBuddy AI** - *Revolutionizing Education Through Intelligent Automation* 🚀
 
 *Built with ❤️ by Divyansh Rai for I'm Beside You Software Engineering Internship*
