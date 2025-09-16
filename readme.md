@@ -138,8 +138,7 @@ cp .env.example .env
 # Edit .env file with your Google API key
 
 # 5. Start the backend server
-cd backend
-python app.py
+uvicorn backend.app:app --reload
 
 # 6. Start the frontend (new terminal)
 streamlit run frontend/streamlit_app.py
@@ -155,6 +154,22 @@ DATABASE_URL=sqlite:///./studybuddy.db
 FAISS_INDEX_PATH=./faiss_index
 DOCUMENTS_PATH=./documents
 ```
+
+---
+
+## 🎥 **Demo Video & Project Materials**
+
+Watch StudyBuddy AI in action! Access the complete demo video and project materials:
+
+[![Demo Materials](https://img.shields.io/badge/📹_Demo_Video_&_Materials-View_Now-red.svg)](https://drive.google.com/drive/folders/1cjXftb8tCLZ-L_QKDgpx0V1FXDP0tn8U?usp=drive_link)
+
+**What's included:**
+- 🎥 Complete demo video showing multi-agent system in action
+- 🎯 Live plan creation and step execution demonstration
+- ⚡ Bulk processing and real-time progress tracking
+- 📊 Result display with study guides, flashcards, and quizzes
+- 🔧 Technical implementation deep-dive
+- 📋 Additional project documentation and materials
 
 ---
 
@@ -338,25 +353,6 @@ StudyBuddy/
 
 ---
 
-## 📈 **Performance Metrics & Benchmarks**
-
-### **System Performance**
-| Metric | Value | Industry Standard |
-|--------|-------|------------------|
-| Plan Generation Time | 10-15 seconds | 30-60 seconds |
-| Step Execution Time | 5-8 seconds | 15-30 seconds |
-| Concurrent Users | 10+ supported | 5-10 typical |
-| Success Rate | 95%+ | 80-90% typical |
-| Error Recovery | Automatic fallbacks | Manual retry |
-
-### **User Experience Metrics**
-- **Time Savings**: 80% reduction in study preparation time
-- **Content Quality**: Structured, comprehensive learning materials
-- **User Engagement**: Interactive, visually appealing interface
-- **Accessibility**: Cross-platform compatibility and responsive design
-
----
-
 ## 🎓 **Educational Impact & Social Value**
 
 ### **Accessibility Benefits**
@@ -426,35 +422,9 @@ StudyBuddy/
 - **Security Considerations**: API security and data protection
 - **Documentation**: Comprehensive technical and user documentation
 
-### **DevOps & Deployment**
-- **Environment Management**: Configuration and dependency handling
-- **Testing Strategy**: Automated testing and quality assurance
-- **Debugging Tools**: Comprehensive diagnostic and troubleshooting utilities
-- **Production Readiness**: Error recovery and monitoring capabilities
-
 ---
 
-## 📞 **Contact & Professional Information**
-
-**Divyansh Rai**  
-Software Engineering Intern Candidate  
-I'm Beside You - Application Submission
-
-📧 **Email**: [Your Email]  
-🔗 **LinkedIn**: [Your LinkedIn Profile]  
-🐙 **GitHub**: [divyansh-cyber](https://github.com/divyansh-cyber)  
-🌐 **Portfolio**: [Your Portfolio Website]
-
-### **Application Context**
-This project was developed as part of my application for the Software Engineering Intern position at I'm Beside You. It demonstrates:
-- **System Design Capabilities**: Multi-agent architecture and scalable backend design
-- **Full-Stack Development**: End-to-end application development and deployment
-- **AI/ML Integration**: Modern LLM integration and intelligent system design
-- **Product Innovation**: Novel approach to educational technology and user experience
-
----
-
-## 📄 **License & Usage**
+##  **License & Usage**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
