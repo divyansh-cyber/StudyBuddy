@@ -161,7 +161,7 @@ DOCUMENTS_PATH=./documents
 
 Watch StudyBuddy AI in action! Access the complete demo video and project materials:
 
-[![Demo Materials](https://img.shields.io/badge/📹_Demo_Video_&_Materials-View_Now-red.svg)](https://drive.google.com/drive/folders/1cjXftb8tCLZ-L_QKDgpx0V1FXDP0tn8U?usp=drive_link)
+https://drive.google.com/drive/folders/1cjXftb8tCLZ-L_QKDgpx0V1FXDP0tn8U?usp=drive_link
 
 **What's included:**
 - 🎥 Complete demo video showing multi-agent system in action
