@@ -15,6 +15,24 @@
 [![Google Gemini](https://img.shields.io/badge/AI-Google%20Gemini-orange.svg)](https://gemini.google.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+---
+
+## 🎥 **Demo Video & Project Materials**
+
+Watch StudyBuddy AI in action! Access the complete demo video and project materials:
+
+https://drive.google.com/drive/folders/1cjXftb8tCLZ-L_QKDgpx0V1FXDP0tn8U?usp=drive_link
+
+**What's included:**
+- 🎥 Complete demo video showing multi-agent system in action
+- 🎯 Live plan creation and step execution demonstration
+- ⚡ Bulk processing and real-time progress tracking
+- 📊 Result display with study guides, flashcards, and quizzes
+- 🔧 Technical implementation deep-dive
+- 📋 Additional project documentation and materials
+
+---
+
 ## 🎯 **Project Overview**
 
 StudyBuddy AI is a sophisticated **multi-agent artificial intelligence system** that automates the entire learning workflow - from intelligent study plan generation to personalized content creation and progress tracking. Unlike traditional study tools, StudyBuddy employs three specialized AI agents that collaborate seamlessly to deliver a comprehensive, automated learning experience.
@@ -153,22 +171,6 @@ DATABASE_URL=sqlite:///./studybuddy.db
 FAISS_INDEX_PATH=./faiss_index
 DOCUMENTS_PATH=./documents
 ```
-
----
-
-## 🎥 **Demo Video & Project Materials**
-
-Watch StudyBuddy AI in action! Access the complete demo video and project materials:
-
-https://drive.google.com/drive/folders/1cjXftb8tCLZ-L_QKDgpx0V1FXDP0tn8U?usp=drive_link
-
-**What's included:**
-- 🎥 Complete demo video showing multi-agent system in action
-- 🎯 Live plan creation and step execution demonstration
-- ⚡ Bulk processing and real-time progress tracking
-- 📊 Result display with study guides, flashcards, and quizzes
-- 🔧 Technical implementation deep-dive
-- 📋 Additional project documentation and materials
 
 ---
 
