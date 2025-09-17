@@ -434,5 +434,4 @@ StudyBuddy/
 
 **StudyBuddy AI** - *Revolutionizing Education Through Intelligent Automation* 🚀
 
-*Built with ❤️ by Divyansh Rai for I'm Beside You Software Engineering Internship*
 
