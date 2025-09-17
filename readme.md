@@ -4,7 +4,6 @@
 **Developer:** Divyansh Rai  
 **University:** IIT (BHU) VARANASI  
 **Department:** Chemical Engineering and Technology 
-**Application:** Software Engineering Intern - I'm Beside You
 
 ---
 
@@ -419,16 +418,6 @@ StudyBuddy/
 - **Performance Optimization**: Efficient processing and caching strategies
 - **Security Considerations**: API security and data protection
 - **Documentation**: Comprehensive technical and user documentation
-
----
-
-##  **License & Usage**
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-**Academic/Educational Use**: Free for educational institutions and non-commercial research  
-**Commercial Use**: Contact for licensing discussions  
-**Contributions**: Welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 ---
 
